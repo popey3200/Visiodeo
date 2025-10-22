@@ -1,0 +1,80 @@
+name: Build Android APK (Capacitor)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build-android:
+    name: Build Android APK (Capacitor)
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Setup Java (required by Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android SDK tools (sdkmanager)
+        uses: r0adkll/setup-android@v2
+        with:
+          api-level: 33
+          build-tools: "33.0.2"
+          ndk: false
+          cmake: false
+
+      - name: Ensure web assets folder
+        run: |
+          if [ ! -d "www" ]; then
+            mkdir -p www
+            if [ -f "visiodeo.html" ]; then
+              cp visiodeo.html www/index.html || true
+            fi
+          fi
+
+      - name: Install dependencies (or add Capacitor if missing)
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            npm init -y
+            npm install @capacitor/cli@latest @capacitor/core@latest --no-audit --no-fund --no-save
+          fi
+
+      - name: Ensure Capacitor Android project exists
+        run: |
+          npx cap --version
+          if [ ! -d "android" ]; then
+            echo "android/ not found — adding android platform"
+            npx cap add android --no-interactive
+          else
+            echo "android/ exists — skipping cap add"
+          fi
+
+      - name: Copy web assets into native project
+        run: npx cap copy android
+
+      - name: Build APK (debug)
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: visiodeo-android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

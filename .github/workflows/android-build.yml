@@ -11,8 +11,6 @@ jobs:
   build-android:
     name: Build Android APK (Capacitor)
     runs-on: ubuntu-latest
-    env:
-      ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/android-sdk
 
     steps:
       - name: Checkout repository
@@ -38,6 +36,16 @@ jobs:
           ndk: false
           cmake: false
 
+      - name: Accept Android SDK licenses
+        # sdkmanager est mis dans le PATH par l'action setup-android
+        run: |
+          set -e
+          if command -v sdkmanager >/dev/null 2>&1; then
+            yes | sdkmanager --licenses || true
+          else
+            echo "sdkmanager not found in PATH — continuing (setup-android should have installed it)"
+          fi
+
       - name: Ensure web assets folder
         run: |
           if [ ! -d "www" ]; then
@@ -47,7 +55,7 @@ jobs:
             fi
           fi
 
-      - name: Install dependencies (or add Capacitor if missing)
+      - name: Install dependencies (or install Capacitor if missing)
         run: |
           if [ -f package.json ]; then
             npm ci

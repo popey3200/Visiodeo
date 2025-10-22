@@ -1,0 +1,33 @@
+{
+  "name": "visiodeo",
+  "version": "1.0.0",
+  "description": "Visionneuse de Vidéos empaquetée avec Electron (portable)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable --x64"
+  },
+  "author": "popey3200",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.6.0"
+  },
+  "build": {
+    "appId": "com.popey3200.visiodeo",
+    "productName": "Visiodeo",
+    "files": [
+      "visiodeo.html",
+      "main.js",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

@@ -16,9 +16,11 @@
   "build": {
     "appId": "com.popey3200.visiodeo",
     "productName": "Visiodeo",
+    "icon": "visiodeo/visiodeo.ico",
     "files": [
       "visiodeo.html",
       "main.js",
+      "visiodeo/visiodeo.ico",
       "assets/**/*"
     ],
     "win": {
